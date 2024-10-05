@@ -8,6 +8,8 @@ import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 
 fun main() {
+	Database.createDBIfNotExists()
+	Database.connect()
 
 	// Setup terminal and screen layers
 	val terminal = DefaultTerminalFactory().createTerminal()
