@@ -4,6 +4,7 @@ import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -11,6 +12,7 @@ object Database {
 	private val homeDirectory: String = System.getProperty("user.home")
 	private val dbPath = "$homeDirectory/.local/share/tuimorrow/db.sqlite"
 	private val jdbcUrl = "jdbc:sqlite:$dbPath"
+	private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 	private var connection: Connection? = null
 
 	fun createDBIfNotExists() {
@@ -59,16 +61,16 @@ object Database {
 
 	fun insertTask(task: Task) {
 		try {
-			// Define your insert SQL statement
 			val sql = "INSERT INTO Task VALUES (?, ?, ?, ?)"
 
 			// Create a PreparedStatement object with the insert SQL statement
 			val preparedStatement = connection?.prepareStatement(sql)
 
-			val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+			// Convert Dates to Strings
 			val formattedCreateDateTime = task.createDateTime.format(formatter)
 			val formattedEndDateTime = task.endDateTime.format(formatter)
 
+			// Add every property of the task to the database
 			val properties = Task::class.declaredMemberProperties
 			var i = 0
 			for (property in properties) {
@@ -76,18 +78,38 @@ object Database {
 				i++
 			}
 
-			// Set the values for the parameters in the insert SQL statement
-			preparedStatement?.setString(1, task.name)
-			preparedStatement?.setString(2, task.list)
-			preparedStatement?.setString(3, formattedCreateDateTime)
-			preparedStatement?.setString(4, formattedEndDateTime)
-
 			// Execute the insert SQL statement
 			val rowsAffected = preparedStatement?.executeUpdate()
 
 			println("$rowsAffected row(s) inserted successfully.")
 		} catch (e: SQLException) {
 			println("Failed to insert task: ${e.message}")
+		}
+	}
+
+	// Get all tasks from the database and put them into al. Setting list to null retrieves all tasks
+	fun getTasks(al: ArrayList<Task>, list: String?) {
+		try {
+			val statement = connection?.createStatement()
+
+			// Execute a query
+			var statementWhere = ""
+			if (list != null) statementWhere = " WHERE list=$list"
+			val resultSet = statement?.executeQuery("SELECT * FROM Task$statementWhere")
+
+			// Process the results
+			while (resultSet?.next()!!) {
+				val name = resultSet.getString("name")
+				val taskList = resultSet.getString("list")
+				val createDateTime = LocalDateTime.parse(resultSet.getString("createDateTime"), formatter)
+				val endDateTime = LocalDateTime.parse(resultSet.getString("endDateTime"), formatter)
+
+				// Create a Task object and add it to the list
+				val task = Task(name, taskList, createDateTime, endDateTime)
+				al.add(task)
+			}
+		} catch (e: Exception) {
+			e.printStackTrace() // Print the error
 		}
 	}
 }
