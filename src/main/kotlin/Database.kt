@@ -90,6 +90,7 @@ object Database {
 	// Get all tasks from the database and put them into al. Setting list to null retrieves all tasks
 	fun getTasks(al: ArrayList<Task>, list: String?) {
 		try {
+			al.clear()
 			val statement = connection?.createStatement()
 
 			// Execute a query

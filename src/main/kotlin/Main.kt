@@ -13,27 +13,10 @@ fun main() {
 
 	// Setup terminal and screen layers
 	val terminal = DefaultTerminalFactory().createTerminal()
+	terminal.setCursorVisible(false);
 	val screen: Screen = TerminalScreen(terminal)
 	screen.startScreen()
+	val textGUI = MultiWindowTextGUI(screen, DefaultWindowManager(), EmptySpace(TextColor.ANSI.BLUE))
 
-	// Create panel to hold components
-	val panel = Panel()
-	panel.setLayoutManager(GridLayout(2))
-
-	panel.addComponent(Label("Forename"))
-	panel.addComponent(TextBox())
-
-	panel.addComponent(Label("Surname"))
-	panel.addComponent(TextBox())
-
-	panel.addComponent(EmptySpace(TerminalSize(0, 0))) // Empty space underneath labels
-	panel.addComponent(Button("Submit"))
-
-	// Create window to hold the panel
-	val window = BasicWindow()
-	window.component = panel
-
-	// Create gui and start gui
-	val gui = MultiWindowTextGUI(screen, DefaultWindowManager(), EmptySpace(TextColor.ANSI.BLUE))
-	gui.addWindowAndWait(window)
+	MainMenu.show(textGUI)
 }
