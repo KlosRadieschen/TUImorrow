@@ -1,6 +1,5 @@
 package main
 
-import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.TextColor
 import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.screen.Screen
@@ -18,5 +17,5 @@ fun main() {
 	screen.startScreen()
 	val textGUI = MultiWindowTextGUI(screen, DefaultWindowManager(), EmptySpace(TextColor.ANSI.BLUE))
 
-	MainMenu.show(textGUI)
+	MainMenu.show(textGUI, screen, terminal)
 }
