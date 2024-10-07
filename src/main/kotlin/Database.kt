@@ -6,6 +6,7 @@ import java.sql.DriverManager
 import java.sql.SQLException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.TreeSet
 import kotlin.reflect.full.declaredMemberProperties
 
 object Database {
@@ -68,14 +69,12 @@ object Database {
 
 			// Convert Dates to Strings
 			val formattedCreateDateTime = task.createDateTime.format(formatter)
-			val formattedEndDateTime = task.endDateTime.format(formatter)
+			val formattedEndDateTime = task.dueDateTime.format(formatter)
 
 			// Add every property of the task to the database
 			val properties = Task::class.declaredMemberProperties
-			var i = 0
-			for (property in properties) {
+			for ((i, property) in properties.withIndex()) {
 				preparedStatement?.setString(i, property.get(task) as String)
-				i++
 			}
 
 			// Execute the insert SQL statement
@@ -87,10 +86,10 @@ object Database {
 		}
 	}
 
-	// Get all tasks from the database and put them into al. Setting list to null retrieves all tasks
-	fun getTasks(al: ArrayList<Task>, list: String?) {
+	// Get all tasks from the database and put them into ts, then return that. Setting list to null retrieves all tasks
+	fun getTasks(list: String?): TreeSet<Task> {
 		try {
-			al.clear()
+			val ts = TreeSet<Task>(compareBy<Task> { it.dueDateTime }.thenBy { it.name })
 			val statement = connection?.createStatement()
 
 			// Execute a query
@@ -105,12 +104,13 @@ object Database {
 				val createDateTime = LocalDateTime.parse(resultSet.getString("createDateTime"), formatter)
 				val endDateTime = LocalDateTime.parse(resultSet.getString("endDateTime"), formatter)
 
-				// Create a Task object and add it to the list
-				val task = Task(name, taskList, createDateTime, endDateTime)
-				al.add(task)
+				// Create a Task object and add it to the set
+				ts.add(Task(name, taskList, createDateTime, endDateTime))
 			}
+
+			return ts
 		} catch (e: Exception) {
-			e.printStackTrace() // Print the error
+			throw e
 		}
 	}
 }
