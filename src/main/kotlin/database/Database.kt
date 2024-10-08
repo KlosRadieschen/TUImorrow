@@ -1,5 +1,7 @@
-package main
+package main.Database
 
+import main.Tasks.Task
+import java.awt.Color
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
@@ -87,9 +89,9 @@ object Database {
 	}
 
 	// Get all tasks from the database and put them into ts, then return that. Setting list to null retrieves all tasks
-	fun getTasks(list: String?): TreeSet<Task> {
+	fun getTasks(ts: TreeSet<Task>, list: String?) {
 		try {
-			val ts = TreeSet<Task>(compareBy<Task> { it.dueDateTime }.thenBy { it.name })
+			ts.clear()
 			val statement = connection?.createStatement()
 
 			// Execute a query
@@ -107,9 +109,35 @@ object Database {
 				// Create a Task object and add it to the set
 				ts.add(Task(name, taskList, createDateTime, endDateTime))
 			}
-
-			return ts
 		} catch (e: Exception) {
+			throw e
+		}
+	}
+
+	fun getListColor(listName: String): Color {
+		try {
+			// Prepare SQL query to get the color for the specified list name
+			val sql = "SELECT color FROM List WHERE name = ?"
+			val preparedStatement = connection?.prepareStatement(sql)
+
+			// Set the list name parameter in the query
+			preparedStatement?.setString(1, listName)
+
+			// Execute the query
+			val resultSet = preparedStatement?.executeQuery()
+
+			// If a result is found, convert the color string to a java.awt.Color object
+			if (resultSet != null && resultSet.next()) {
+				val colorString = resultSet.getString("color")
+
+				// Assuming color is stored in hex format (e.g., "#FF5733")
+				return Color.decode(colorString)
+			} else {
+				// Handle case when the list name is not found
+				println("List '$listName' not found.")
+				throw NoSuchElementException("List with name '$listName' not found.")
+			}
+		} catch (e: SQLException) {
 			throw e
 		}
 	}

@@ -5,6 +5,7 @@ import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import main.Database.Database
 import main.Menus.MainMenu
 
 fun main() {
@@ -16,7 +17,7 @@ fun main() {
 	terminal.setCursorVisible(false);
 	val screen: Screen = TerminalScreen(terminal)
 	screen.startScreen()
-	val textGUI = MultiWindowTextGUI(screen, DefaultWindowManager(), EmptySpace(TextColor.ANSI.BLUE))
+	val textGUI = MultiWindowTextGUI(screen, DefaultWindowManager(), EmptySpace(TextColor.ANSI.MAGENTA_BRIGHT))
 
 	MainMenu.show(textGUI)
 }
