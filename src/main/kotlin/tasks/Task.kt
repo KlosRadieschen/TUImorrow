@@ -1,4 +1,4 @@
-package main.Tasks
+package main.tasks
 
 import java.time.LocalDateTime
 

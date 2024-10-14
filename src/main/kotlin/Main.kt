@@ -5,12 +5,12 @@ import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
-import main.Database.Database
-import main.Menus.MainMenu
+import main.database.Database
+import main.menus.MainMenu
 
 fun main() {
-	Database.createDBIfNotExists()
 	Database.connect()
+	Database.createTablesIfNotExists()
 
 	// Setup terminal and screen layers
 	val terminal = DefaultTerminalFactory().createTerminal()

@@ -1,17 +1,17 @@
-package main.Menus
+package main.menus
 
 import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.menu.Menu
 import com.googlecode.lanterna.gui2.menu.MenuItem
-import main.Database.ColorBuffer
-import main.Tasks.TaskManager
+import main.database.ColorBuffer
+import main.tasks.TaskManager
 
 
-object ListMenu : main.Menus.Menu() {
+object ListMenu : main.menus.Menu() {
 	override fun createAndAddPanels(textGUI: MultiWindowTextGUI) {
 		mainPanel.addComponent(createListSelectorPanel().withBorder(Borders.singleLine("Options")))
-		mainPanel.addComponent(createTasksPanel().withBorder(Borders.singleLine("Tasks")))
+		//mainPanel.addComponent(createTasksPanel().withBorder(Borders.singleLine("Tasks")))
 		mainPanel.addComponent(createExitPanel().withBorder(Borders.singleLine()))
 	}
 

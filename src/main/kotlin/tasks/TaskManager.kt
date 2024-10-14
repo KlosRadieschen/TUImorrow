@@ -1,6 +1,6 @@
-package main.Tasks
+package main.tasks
 
-import main.Database.Database
+import main.database.Database
 import java.awt.Color
 import java.util.TreeSet
 

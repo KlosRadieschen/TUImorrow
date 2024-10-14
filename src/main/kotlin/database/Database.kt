@@ -1,6 +1,6 @@
-package main.Database
+package main.database
 
-import main.Tasks.Task
+import main.tasks.Task
 import java.awt.Color
 import java.io.File
 import java.sql.Connection
@@ -8,7 +8,7 @@ import java.sql.DriverManager
 import java.sql.SQLException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.TreeSet
+import java.util.*
 import kotlin.reflect.full.declaredMemberProperties
 
 object Database {
@@ -39,13 +39,45 @@ object Database {
 		} else {
 			println("SQLite file already exists at: ${dbFile.path}")
 		}
+
+		createTablesIfNotExists()
+	}
+
+	fun createTablesIfNotExists() {
+		val createTaskTableSQL = """
+            CREATE TABLE IF NOT EXISTS Task (
+                name TEXT ,
+                list TEXT NOT NULL,
+                createDateTime TEXT NOT NULL,
+                dueDateTime TEXT,
+				PRIMARY KEY (name, dueDateTime)
+            );
+        """.trimIndent()
+
+		val createListTableSQL = """
+            CREATE TABLE IF NOT EXISTS List (
+                name TEXT PRIMARY KEY,
+                color TEXT NOT NULL
+            );
+        """.trimIndent()
+
+		try {
+			connection?.createStatement()?.use { statement ->
+				// Create Task table
+				statement.execute(createTaskTableSQL)
+				println("Task table created or already exists.")
+
+				// Create List table
+				statement.execute(createListTableSQL)
+				println("List table created or already exists.")
+			}
+		} catch (e: SQLException) {
+			println("Failed to create tables: ${e.message}")
+		}
 	}
 
 	fun connect() {
 		try {
-			// Load the SQLite JDBC driver
-			Class.forName("org.sqlite.JDBC")
-
 			// Establish the database connection
 			connection = DriverManager.getConnection(jdbcUrl)
 

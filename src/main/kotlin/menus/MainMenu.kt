@@ -1,4 +1,4 @@
-package main.Menus
+package main.menus
 
 import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*

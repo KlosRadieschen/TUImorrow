@@ -1,4 +1,4 @@
-package main.Database
+package main.database
 
 import java.awt.Color
 

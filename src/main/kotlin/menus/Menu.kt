@@ -1,16 +1,18 @@
-package main.Menus
+package main.menus
 
 import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
 
 abstract class Menu {
-	val window = BasicWindow()
+	private val window = BasicWindow()
 	val mainPanel: Panel = Panel()
 
 	abstract fun createAndAddPanels(textGUI: MultiWindowTextGUI)
 
 	fun show(textGUI: MultiWindowTextGUI) {
-		createAndAddPanels(textGUI)
+		if (window.component == null) {
+			createAndAddPanels(textGUI)
+		}
 		window.setHints(listOf(Window.Hint.CENTERED))
 		window.component = mainPanel.withBorder(Borders.doubleLine(" TUImorrow "))
 		textGUI.addWindowAndWait(window)
