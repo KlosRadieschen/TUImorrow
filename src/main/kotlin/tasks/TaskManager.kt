@@ -1,7 +1,6 @@
 package main.tasks
 
 import main.database.Database
-import java.awt.Color
 import java.util.TreeSet
 
 /**
@@ -15,7 +14,7 @@ object TaskManager {
 	 * A sorted set of tasks, ordered primarily by their due date and time, and secondarily by their name.
 	 * Each task in the set is an instance of the `Task` class.
 	 */
-	val tasks = TreeSet<Task>(compareBy<Task> { it.dueDateTime }.thenBy { it.name })
+	val tasks = TreeSet<Task>(compareBy<Task> { it.dueDate }.thenBy { it.name })
 	/**
 	 * Represents the current task list being used or viewed within the application.
 	 * This variable stores the name of the current list as a nullable string.

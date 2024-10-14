@@ -11,7 +11,7 @@ import main.menus.MainMenu
 
 fun main() {
 	Database.connect()
-	Database.createTablesIfNotExists()
+	Database.createDBIfNotExists()
 	ColorBuffer.refreshColors()
 
 	// Setup terminal and screen layers

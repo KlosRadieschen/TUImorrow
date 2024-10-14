@@ -1,8 +1,13 @@
 package main.menus
 
+import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
-import com.googlecode.lanterna.gui2.menu.MenuItem
 import main.database.ColorBuffer
+import main.database.Database
+import main.tasks.Task
+import java.time.LocalDate
+import com.googlecode.lanterna.gui2.menu.Menu
+import com.googlecode.lanterna.gui2.menu.MenuItem
 
 /**
  * An implementation of `Menu` that provides functionality to add a new task.
@@ -11,7 +16,7 @@ import main.database.ColorBuffer
  * to enter task details such as name, list, and due date, and to add the task
  * to the application.
  */
-object AddTaskMenu : Menu() {
+object AddTaskMenu : main.menus.Menu() {
 	/**
 	 * Overrides the abstract method to create and add panels to the main application window.
 	 *
@@ -21,7 +26,7 @@ object AddTaskMenu : Menu() {
 	 * @param textGUI The MultiWindowTextGUI object to which the panels will be added.
 	 */
 	override fun createAndAddPanels(textGUI: MultiWindowTextGUI) {
-		mainPanel.addComponent(createInputsPanel().withBorder(Borders.singleLine("Add task")))
+		mainPanel.addComponent(createInputsPanel().withBorder(Borders.singleLine(" Add task ")))
 		mainPanel.addComponent(createExitPanel().withBorder(Borders.singleLine()))
 	}
 
@@ -34,18 +39,58 @@ object AddTaskMenu : Menu() {
 	 */
 	private fun createInputsPanel(): Panel {
 		val inputsPanel = Panel()
-		inputsPanel.addComponent(Label("Name: "))
-		TextBox().addTo(inputsPanel)
+		var listName = ""
+		val newListInput = TextBox().setText("New List Name")
 
-		val listMenu = ComboBox<String>("List")
-		for (entry in ColorBuffer.colors) listMenu.addItem(entry.key)
-		listMenu.addItem("New List")
-		inputsPanel.addComponent(listMenu)
+		inputsPanel.addComponent(Label("Name: "))
+		val nameInput = TextBox().addTo(inputsPanel)
+
+		inputsPanel.addComponent(EmptySpace(TerminalSize(0, 1)));
+
+		if (ColorBuffer.colors.isNotEmpty()) {
+			val listMenu = Menu("Select List")
+			for (entry in ColorBuffer.colors) {
+				listMenu.add(MenuItem(entry.key, Runnable {
+					listName = entry.key
+				}))
+			}
+			listMenu.add(MenuItem("New List Name", Runnable {
+				inputsPanel.addComponent(4, newListInput)
+			}))
+			inputsPanel.addComponent(listMenu)
+		} else {
+			inputsPanel.addComponent(newListInput)
+		}
+
+		inputsPanel.addComponent(EmptySpace(TerminalSize(0, 1)));
 
 		inputsPanel.addComponent(Label("Due Date: "))
-		TextBox().addTo(inputsPanel)
+		val yearBox = TextBox().setText(LocalDate.now().year.toString())
+		val monthBox = TextBox().setText(LocalDate.now().monthValue.toString())
+		val dayBox = TextBox()
 
-		Button("Add").addTo(inputsPanel)
+		inputsPanel.addComponent(Label("Enter Year (YYYY):"))
+		inputsPanel.addComponent(yearBox)
+		inputsPanel.addComponent(Label("Enter Month (MM):"))
+		inputsPanel.addComponent(monthBox)
+		inputsPanel.addComponent(Label("Enter Day (DD):"))
+		inputsPanel.addComponent(dayBox)
+
+		inputsPanel.addComponent(EmptySpace(TerminalSize(0, 1)));
+
+		Button("     Add     ", Runnable {
+			val year = yearBox.text.toInt()
+			val month = monthBox.text.toInt()
+			val day = dayBox.text.toInt()
+
+			if (newListInput.text != "New List") listName = newListInput.text
+
+			Database.insertTask(Task(
+				name = nameInput.text,
+				listName = listName,
+				dueDate = LocalDate.of(year, month, day),
+			))
+		}).addTo(inputsPanel)
 
 		return inputsPanel
 	}

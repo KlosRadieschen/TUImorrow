@@ -5,7 +5,9 @@ import java.awt.Color
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.PreparedStatement
 import java.sql.SQLException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -103,14 +105,14 @@ object Database {
 	 *
 	 * @throws SQLException If a database access error occurs or the SQL statements are invalid.
 	 */
-	fun createTablesIfNotExists() {
+	private fun createTablesIfNotExists() {
 		val createTaskTableSQL = """
             CREATE TABLE IF NOT EXISTS Task (
                 name TEXT ,
                 list TEXT NOT NULL,
-                createDateTime TEXT NOT NULL,
-                dueDateTime TEXT,
-				PRIMARY KEY (name, dueDateTime)
+                createDate DATE NOT NULL,
+                dueDate DATE,
+				PRIMARY KEY (name, dueDate)
             );
         """.trimIndent()
 
@@ -176,28 +178,34 @@ object Database {
 	 *             list name, due date and time, and creation date and time.
 	 */
 	fun insertTask(task: Task) {
+		val sql = "INSERT INTO Task VALUES (?, ?, ?, ?)"
+		var preparedStatement: PreparedStatement? = null
 		try {
-			val sql = "INSERT INTO Task VALUES (?, ?, ?, ?)"
-
-			// Create a PreparedStatement object with the insert SQL statement
-			val preparedStatement = connection?.prepareStatement(sql)
-
-			// Convert Dates to Strings
-			val formattedCreateDateTime = task.createDateTime.format(formatter)
-			val formattedEndDateTime = task.dueDateTime.format(formatter)
-
-			// Add every property of the task to the database
-			val properties = Task::class.declaredMemberProperties
-			for ((i, property) in properties.withIndex()) {
-				preparedStatement?.setString(i, property.get(task) as String)
+			if (connection == null) {
+				throw SQLException("Database connection is null.")
 			}
 
-			// Execute the insert SQL statement
-			val rowsAffected = preparedStatement?.executeUpdate()
+			preparedStatement = connection!!.prepareStatement(sql)
+			// Convert Dates to Strings or compatible SQL date object
+			val formattedCreateDateTime = task.createDate.toString() // or your desired format
+			val formattedEndDateTime = task.dueDate.toString()      // or your desired format
 
+			// Set the properties explicitly for better manageability
+			preparedStatement.setString(1, task.name)
+			preparedStatement.setString(2, task.listName)
+			preparedStatement.setDate(3, java.sql.Date.valueOf(task.dueDate))
+			preparedStatement.setDate(4, java.sql.Date.valueOf(task.createDate))
+
+			val rowsAffected = preparedStatement.executeUpdate()
 			println("$rowsAffected row(s) inserted successfully.")
 		} catch (e: SQLException) {
 			println("Failed to insert task: ${e.message}")
+		} finally {
+			try {
+				preparedStatement?.close()
+			} catch (e: SQLException) {
+				println("Failed to close PreparedStatement: ${e.message}")
+			}
 		}
 	}
 
@@ -223,11 +231,11 @@ object Database {
 			while (resultSet?.next()!!) {
 				val name = resultSet.getString("name")
 				val taskList = resultSet.getString("list")
-				val createDateTime = LocalDateTime.parse(resultSet.getString("createDateTime"), formatter)
-				val endDateTime = LocalDateTime.parse(resultSet.getString("endDateTime"), formatter)
+				val createDate = resultSet.getDate("createDate").toLocalDate()
+				val endDate = resultSet.getDate("dueDate").toLocalDate()
 
 				// Create a Task object and add it to the set
-				ts.add(Task(name, taskList, createDateTime, endDateTime))
+				ts.add(Task(name, taskList, createDate, endDate))
 			}
 		} catch (e: Exception) {
 			throw e
