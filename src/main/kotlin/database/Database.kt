@@ -173,4 +173,24 @@ object Database {
 			throw e
 		}
 	}
+
+	fun getAllListColors(colors: HashMap<String, Color>) {
+		try {
+			// Prepare SQL query to get the color for the specified list name
+			val sql = "SELECT * FROM List"
+			val preparedStatement = connection?.prepareStatement(sql)
+
+			// Execute the query
+			val resultSet = preparedStatement?.executeQuery()
+
+			// If a result is found, convert the color string to a java.awt.Color object
+			if (resultSet != null) {
+				while (resultSet.next()) {
+					colors[resultSet.getString("name")] = Color.decode(resultSet.getString("color"))
+				}
+			}
+		} catch (e: SQLException) {
+			throw e
+		}
+	}
 }

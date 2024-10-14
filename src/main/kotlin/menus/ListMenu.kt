@@ -11,7 +11,7 @@ import main.tasks.TaskManager
 object ListMenu : main.menus.Menu() {
 	override fun createAndAddPanels(textGUI: MultiWindowTextGUI) {
 		mainPanel.addComponent(createListSelectorPanel().withBorder(Borders.singleLine("Options")))
-		//mainPanel.addComponent(createTasksPanel().withBorder(Borders.singleLine("Tasks")))
+		mainPanel.addComponent(createTasksPanel().withBorder(Borders.singleLine("Tasks")))
 		mainPanel.addComponent(createExitPanel().withBorder(Borders.singleLine()))
 	}
 

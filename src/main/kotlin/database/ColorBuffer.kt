@@ -13,4 +13,8 @@ object ColorBuffer {
 			return newColor
 		}
 	}
+
+	fun refreshColors() {
+		Database.getAllListColors(colors)
+	}
 }

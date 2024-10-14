@@ -17,7 +17,7 @@ object MainMenu : Menu() {
 		}).addTo(optionsPanel)
 		optionsPanel.addComponent(EmptySpace(TerminalSize(0, 0)))
 		Button("  Add Task  ", Runnable {
-			TODO()
+			AddTaskMenu.show(textGUI)
 		}).addTo(optionsPanel)
 		return optionsPanel
 	}
