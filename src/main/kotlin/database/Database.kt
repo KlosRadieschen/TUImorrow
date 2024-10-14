@@ -11,13 +11,62 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.reflect.full.declaredMemberProperties
 
+/**
+ * Singleton object representing a database manager, responsible for managing a SQLite database.
+ */
 object Database {
+	/**
+	 * Represents the home directory of the current user.
+	 *
+	 * This value is obtained from the system property "user.home".
+	 */
 	private val homeDirectory: String = System.getProperty("user.home")
+	/**
+	 * The path to the SQLite database file used by the application.
+	 * This path is constructed using the user's home directory and places the database
+	 * file in the `.local/share/tuimorrow` directory with the name `db.sqlite`.
+	 */
 	private val dbPath = "$homeDirectory/.local/share/tuimorrow/db.sqlite"
+	/**
+	 * The JDBC URL used to establish a database connection to an SQLite database.
+	 * The URL is constructed dynamically using the specified database path.
+	 */
 	private val jdbcUrl = "jdbc:sqlite:$dbPath"
+	/**
+	 * A `DateTimeFormatter` pattern used for formatting and parsing
+	 * date and time strings in the format `yyyy-MM-dd HH:mm:ss`.
+	 *
+	 * Utilized in functions to convert `LocalDateTime` objects to
+	 * formatted strings for database insertion and vice versa.
+	 */
 	private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+	/**
+	 * Represents a database connection used for executing various SQL operations.
+	 *
+	 * This variable is intended to establish a connection to a database, allowing
+	 * for the creation of tables, insertion of tasks, retrieval of tasks, and
+	 * retrieval of list colors.
+	 *
+	 * The connection is managed via:
+	 * - [connect]: Opens the connection to the database.
+	 * - [disconnect]: Closes the connection to the database.
+	 *
+	 * The connection state is checked and utilized in various functions like
+	 * [createTablesIfNotExists], [insertTask], [getTasks], [getListColor], and [getAllListColors]
+	 * to perform the necessary database operations.
+	 */
 	private var connection: Connection? = null
 
+	/**
+	 * Creates the database file if it does not already exist.
+	 *
+	 * This method checks for the existence of the specified SQLite file. If the file does not exist, it creates the file along
+	 * with necessary parent directories. Following that, it initializes the database tables by calling `createTablesIfNotExists`.
+	 *
+	 * The method handles the creation of the SQLite file and calls another method to ensure that the required tables exist.
+	 *
+	 * Prints messages to the console regarding the creation status of the directories, file, and tables.
+	 */
 	fun createDBIfNotExists() {
 		// Construct the full path to the SQLite file
 		val dbFile = File(dbPath)
@@ -43,6 +92,17 @@ object Database {
 		createTablesIfNotExists()
 	}
 
+	/**
+	 * Creates the necessary `Task` and `List` tables in the database if they do not already exist.
+	 *
+	 * - The `Task` table contains columns for `name`, `list`, `createDateTime`, and `dueDateTime` with a composite primary key on `name` and `dueDateTime`.
+	 * - The `List` table contains columns for `name` and `color` with a primary key on `name`.
+	 *
+	 * This function attempts to execute the create table SQL statements within a database connection.
+	 * If successful, it prints confirmation messages. If it fails, it prints an error message.
+	 *
+	 * @throws SQLException If a database access error occurs or the SQL statements are invalid.
+	 */
 	fun createTablesIfNotExists() {
 		val createTaskTableSQL = """
             CREATE TABLE IF NOT EXISTS Task (
@@ -76,6 +136,17 @@ object Database {
 		}
 	}
 
+	/**
+	 * Establishes a connection to the database using the configured JDBC URL.
+	 *
+	 * Attempts to load the SQLite JDBC driver and connect to the database.
+	 * Prints a success message if the connection is established, or an error
+	 * message if it fails to load the driver or connect to the database.
+	 *
+	 * Exceptions:
+	 * @throws ClassNotFoundException if the SQLite JDBC driver class is not found.
+	 * @throws SQLException if a database access error occurs.
+	 */
 	fun connect() {
 		try {
 			// Establish the database connection
@@ -89,11 +160,21 @@ object Database {
 		}
 	}
 
+	/**
+	 * Disconnects the current database connection if one exists.
+	 * This method closes the connection and prints a confirmation message to the console.
+	 */
 	fun disconnect() {
 		connection?.close()
 		println("Database connection closed.")
 	}
 
+	/**
+	 * Inserts a task into the database.
+	 *
+	 * @param task The task to be inserted, containing properties such as name,
+	 *             list name, due date and time, and creation date and time.
+	 */
 	fun insertTask(task: Task) {
 		try {
 			val sql = "INSERT INTO Task VALUES (?, ?, ?, ?)"
@@ -120,7 +201,14 @@ object Database {
 		}
 	}
 
-	// Get all tasks from the database and put them into ts, then return that. Setting list to null retrieves all tasks
+	/**
+	 * Retrieves tasks from the database and adds them to the given TreeSet.
+	 * If the specified list is null, retrieves all tasks.
+	 *
+	 * @param ts The TreeSet to which the retrieved tasks will be added.
+	 * @param list The name of the list to filter tasks by. If null, all tasks are retrieved.
+	 */
+// Get all tasks from the database and put them into ts, then return that. Setting list to null retrieves all tasks
 	fun getTasks(ts: TreeSet<Task>, list: String?) {
 		try {
 			ts.clear()
@@ -146,6 +234,14 @@ object Database {
 		}
 	}
 
+	/**
+	 * Retrieves the color associated with the specified list name from the database.
+	 *
+	 * @param listName The name of the list for which the color is to be retrieved.
+	 * @return The color associated with the specified list name.
+	 * @throws NoSuchElementException If no list with the specified name is found.
+	 * @throws SQLException If there is an error while accessing the database.
+	 */
 	fun getListColor(listName: String): Color {
 		try {
 			// Prepare SQL query to get the color for the specified list name
@@ -174,6 +270,11 @@ object Database {
 		}
 	}
 
+	/**
+	 * Retrieves all list colors from the database and populates the provided map.
+	 *
+	 * @param colors A HashMap where the key is the list name and the value is the corresponding Color object.
+	 */
 	fun getAllListColors(colors: HashMap<String, Color>) {
 		try {
 			// Prepare SQL query to get the color for the specified list name
