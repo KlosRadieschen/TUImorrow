@@ -2,12 +2,14 @@ package main.menus
 
 import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
+import com.googlecode.lanterna.gui2.menu.Menu
+import com.googlecode.lanterna.gui2.menu.MenuItem
 import main.database.ColorBuffer
 import main.database.Database
 import main.tasks.Task
+import java.awt.Color
 import java.time.LocalDate
-import com.googlecode.lanterna.gui2.menu.Menu
-import com.googlecode.lanterna.gui2.menu.MenuItem
+
 
 /**
  * An implementation of `Menu` that provides functionality to add a new task.
@@ -56,10 +58,12 @@ object AddTaskMenu : main.menus.Menu() {
 			}
 			listMenu.add(MenuItem("New List Name", Runnable {
 				inputsPanel.addComponent(4, newListInput)
+				inputsPanel.addComponent(5, createListColorSelector())
 			}))
 			inputsPanel.addComponent(listMenu)
 		} else {
 			inputsPanel.addComponent(newListInput)
+			inputsPanel.addComponent(createListColorSelector())
 		}
 
 		inputsPanel.addComponent(EmptySpace(TerminalSize(0, 1)));
@@ -93,5 +97,13 @@ object AddTaskMenu : main.menus.Menu() {
 		}).addTo(inputsPanel)
 
 		return inputsPanel
+	}
+
+	private fun createListColorSelector() : ComboBox<String> {
+		val colorChooser = ComboBox<String>()
+		for (color in ColorBuffer.COLORLIST) {
+			colorChooser.addItem(ColorBuffer.getColorName(color))
+		}
+		return colorChooser
 	}
 }
